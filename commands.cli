@@ -2,13 +2,13 @@
 # Configure AKS Baseline
 #
 
-kubectl apply -f baseline/baseline-namsepace.yaml
-kubectl apply -f baseline/aad-pod-identity.yaml
+kubectl apply -f ./baseline/baseline-namsepace.yaml
+kubectl apply -f ./baseline/aad-pod-identity.yaml      # this might need to be exectuted 2 times, to apply podidentityexceptions
 
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Configure Application
 #
 
-kubectl apply -f portop-namsepace.yaml            
-kubectl apply -f traefik-podidentity-binding.yaml
+kubectl apply -f ./portop/portop-namsepace.yaml            
+kubectl apply -f ./portop/traefik-podidentity-binding.yaml 
