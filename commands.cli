@@ -1,0 +1,14 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# Configure AKS Baseline
+#
+
+kubectl apply -f baseline/baseline-namsepace.yaml
+kubectl apply -f baseline/aad-pod-identity.yaml
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Configure Application
+#
+
+kubectl apply -f portop-namsepace.yaml            
+kubectl apply -f traefik-podidentity-binding.yaml
