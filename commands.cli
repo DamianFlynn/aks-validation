@@ -6,9 +6,16 @@ kubectl apply -f ./baseline/baseline-namsepace.yaml
 kubectl apply -f ./baseline/aad-pod-identity.yaml      # this might need to be exectuted 2 times, to apply podidentityexceptions
 
 
+SecretProviderClass
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Configure Application
 #
 
-kubectl apply -f ./portop/portop-namsepace.yaml            
-kubectl apply -f ./portop/traefik-podidentity-binding.yaml 
+kubectl apply -f ./portop/portop-namsepace.yaml 
+kubectl apply -f ./portop/traefik-podidentity-binding.yaml
+kubectl apply -f ./portop/traefik-tls-secret-keyvault.yaml
+
+           
+ 
+az acr import --source docker.io/library/traefik:v2.5.3 -n $ACR_NAME_AKS_BASELINE
