@@ -18,6 +18,12 @@ az network vnet create \
     --subnet-name nodepoolSubnet \
     --subnet-prefix 10.240.0.0/22
 
+az network vnet subnet update \
+    --resource-group $netRG \
+    --name nodepoolSubnet \
+    --vnet-name $netRG-vnet \
+    --disable-private-endpoint-network-policies true 
+
 az network vnet subnet create \
     --name "resourcesSubnet" \
     --vnet-name $netRG-vnet \
@@ -35,6 +41,25 @@ az network vnet subnet create \
     --vnet-name $netRG-vnet \
     --resource-group $netRG \
     --address-prefixes 10.240.5.0/26
+
+
+VNET_ID=$(az network vnet show --resource-group $netRG --name $netRG-vnet --query id -o tsv)
+SUBNET_ID=$(az network vnet subnet show --resource-group $netRG --vnet-name $netRG-vnet --name nodepoolSubnet --query id -o tsv)
+
+
+az role assignment create --assignee <appId> --scope $VNET_ID --role "Network Contributor"
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Configure AKS
+#
+
+aksRG=$envName-aks
+az group create --name $aksRG --location westeurope
+
+az deployment group create -g $aksRG \
+    --template-file ./arm-module/aks.json \
+    --parameters targetVnetResourceId=$VNET_ID
+
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Configure AKS Configuration\ 

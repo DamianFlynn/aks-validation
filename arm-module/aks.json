@@ -49,7 +49,7 @@
   "variables": {
 
     "clusterName": "p-we1k8s-aks",
-    "keyVaultName": "p-we1k8s-aks-2022-kv",
+    "keyVaultName": "p-we1k8s-aks-20220207-kv",
     "mi-aks-controlplane": "p-we1k8s-aks-controlplane-identity",
     "mi-appgateway": "p-we1k8s-aks-appgateway-identity",
     "mi-pod-identity": "p-we1k8s-aks-pods-identity",
@@ -510,49 +510,49 @@
     // },
 
     // this resource only applies once!
-    // {
-    //   "type": "Microsoft.Resources/deployments",
-    //   "name": "EnsureClusterIdentityHasRbacToSelfManagedResources",
-    //   "apiVersion": "2020-06-01",
-    //   "dependsOn": [
-    //     "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('mi-aks-controlplane'))]"
+    {
+      "type": "Microsoft.Resources/deployments",
+      "name": "EnsureClusterIdentityHasRbacToSelfManagedResources",
+      "apiVersion": "2020-06-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('mi-aks-controlplane'))]"
 
-    //   ],
-    //   "resourceGroup": "[variables('vNetResourceGroup')]",
-    //   "properties": {
-    //     "mode": "Incremental",
-    //     "template": {
-    //       "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    //       "contentVersion": "1.0.0.0",
-    //       "resources": [
-    //         {
-    //           "type": "Microsoft.Authorization/roleAssignments",
-    //           "apiVersion": "2020-04-01-preview",
-    //           "name": "[guid(variables('vnetNodePoolSubnetResourceId'), variables('networkContributorRole'), variables('mi-aks-controlplane'))]",
-    //           "scope": "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/', 'snet-clusternodes')]",
-    //           "properties": {
-    //             "roleDefinitionId": "[variables('networkContributorRole')]",
-    //             "description": "Allows cluster identity to join the nodepool vmss resources to this subnet.",
-    //             "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('mi-aks-controlplane'))).principalId]",
-    //             "principalType": "ServicePrincipal"
-    //           }
-    //         },
-    //         {
-    //           "type": "Microsoft.Authorization/roleAssignments",
-    //           "apiVersion": "2020-04-01-preview",
-    //           "name": "[guid(variables('vnetIngressServicesSubnetResourceId'), variables('networkContributorRole'), variables('mi-aks-controlplane'))]",
-    //           "scope": "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/', 'snet-clusteringressservices')]",
-    //           "properties": {
-    //             "roleDefinitionId": "[variables('networkContributorRole')]",
-    //             "description": "Allows cluster identity to join load balancers (ingress resources) to this subnet.",
-    //             "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('mi-aks-controlplane'))).principalId]",
-    //             "principalType": "ServicePrincipal"
-    //           }
-    //         }
-    //       ]
-    //     }
-    //   }
-    // },
+      ],
+      "resourceGroup": "[variables('vNetResourceGroup')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2020-04-01-preview",
+              "name": "[guid(variables('vnetNodePoolSubnetResourceId'), variables('networkContributorRole'), variables('mi-aks-controlplane'))]",
+              "scope": "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/', split(variables('vnetNodePoolSubnetResourceId'),'/')[10])]",
+              "properties": {
+                "roleDefinitionId": "[variables('networkContributorRole')]",
+                "description": "Allows cluster identity to join the nodepool vmss resources to this subnet.",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('mi-aks-controlplane'))).principalId]",
+                "principalType": "ServicePrincipal"
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2020-04-01-preview",
+              "name": "[guid(variables('vnetIngressServicesSubnetResourceId'), variables('networkContributorRole'), variables('mi-aks-controlplane'))]",
+              "scope": "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'), '/subnets/', split(variables('vnetIngressServicesSubnetResourceId'),'/')[10])]",
+              "properties": {
+                "roleDefinitionId": "[variables('networkContributorRole')]",
+                "description": "Allows cluster identity to join load balancers (ingress resources) to this subnet.",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('mi-aks-controlplane'))).principalId]",
+                "principalType": "ServicePrincipal"
+              }
+            }
+          ]
+        }
+      }
+    },
     {
       "type": "Microsoft.Resources/deployments",
       "name": "EnsureClusterUserAssignedHasRbacToManageVMSS",
@@ -596,7 +596,7 @@
       },
       "dependsOn": [
         //"[resourceId('Microsoft.OperationsManagement/solutions', variables('containerInsightsSolutionName'))]",
-        //"[resourceId(variables('vNetResourceGroup'), 'Microsoft.Resources/deployments', 'EnsureClusterIdentityHasRbacToSelfManagedResources')]",
+        "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Resources/deployments', 'EnsureClusterIdentityHasRbacToSelfManagedResources')]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('mi-aks-controlplane'))]",
         // "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameAKSLinuxRestrictive'))]",
         // "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceHttpsIngress'))]",
