@@ -1,0 +1,14 @@
+ failed to update user-assigned identities on node aks-npuser01-35024227-vmss (add [2], del [0], update[0]), error: failed to g
+et identity resource, error: failed to get vmss aks-npuser01-35024227-vmss in resource group MC_p-we1k8s-aks_p-we1k8s-aks_westeurope, error: failed to get vmss aks-npuse
+r01-35024227-vmss in resource group MC_p-we1k8s-aks_p-we1k8s-aks_westeurope, error: compute.VirtualMachineScaleSetsClient#Get: Failure responding to request: StatusCode=
+403 -- Original Error: autorest/azure: Service returned an error. Status=403 Code="AuthorizationFailed" Message="The client '922e19ca-c90d-4f3a-b80c-7c0231dc932f' with o
+bject id '922e19ca-c90d-4f3a-b80c-7c0231dc932f' does not have authorization to perform action 'Microsoft.Compute/virtualMachineScaleSets/read' over scope '/subscriptions
+/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/MC_p-we1k8s-aks_p-we1k8s-aks_westeurope/providers/Microsoft.Compute/virtualMachineScaleSets/aks-npuser01-35024227-vm
+ss' or the scope is invalid. If access was recently granted, please refresh your credentials."
+E0207 12:39:58.799868       1 mic.go:1114] failed to get a list of user-assigned identites from node aks-npuser01-35024227-vmss, error: failed to get identity resource, 
+error: failed to get vmss aks-npuser01-35024227-vmss in resource group MC_p-we1k8s-aks_p-we1k8s-aks_westeurope, error: failed to get vmss aks-npuser01-35024227-vmss in r
+esource group MC_p-we1k8s-aks_p-we1k8s-aks_westeurope, error: compute.VirtualMachineScaleSetsClient#Get: Failure responding to request: StatusCode=403 -- Original Error:
+ autorest/azure: Service returned an error. Status=403 Code="AuthorizationFailed" Message="The client '922e19ca-c90d-4f3a-b80c-7c0231dc932f' with object id '922e19ca-c90
+d-4f3a-b80c-7c0231dc932f' does not have authorization to perform action 'Microsoft.Compute/virtualMachineScaleSets/read' over scope '/subscriptions/3cb7d033-6a8a-40b5-b1
+69-2353436f9b64/resourceGroups/MC_p-we1k8s-aks_p-we1k8s-aks_westeurope/providers/Microsoft.Compute/virtualMachineScaleSets/aks-npuser01-35024227-vmss' or the scope is in
+valid. If access was recently granted, please refresh your credentials."

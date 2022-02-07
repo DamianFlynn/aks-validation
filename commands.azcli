@@ -1,11 +1,53 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# Configure AKS Configuration
+# Configure AZ
+#
+
+subId=283dd4da-759e-4ceb-a6ef-618ebebb7705
+envName=p-we1k8s
+az account set --subscription $subId
+
+# Networking
+
+netRG=$envName-net
+az group create --name $netRG --location westeurope
+
+az network vnet create \
+    --resource-group $netRG \
+    --name $netRG-vnet \
+    --address-prefixes 10.240.0.0/16 \
+    --subnet-name nodepoolSubnet \
+    --subnet-prefix 10.240.0.0/22
+
+az network vnet subnet create \
+    --name "resourcesSubnet" \
+    --vnet-name $netRG-vnet \
+    --resource-group $netRG \
+    --address-prefixes 10.240.4.0/28
+
+az network vnet subnet create \
+    --name "appgatewaySubnet" \
+    --vnet-name $netRG-vnet \
+    --resource-group $netRG \
+    --address-prefixes 10.240.4.16/28
+
+az network vnet subnet create \
+    --name "AzureBastionSubnet" \
+    --vnet-name $netRG-vnet \
+    --resource-group $netRG \
+    --address-prefixes 10.240.5.0/26
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Configure AKS Configuration\ 
 #
 
 # Ensure the cluster has the AKS to Keyvault Secrets Provider enabled
 az aks enable-addons --addons azure-keyvault-secrets-provider --name p-we1k8s-aks --resource-group p-we1k8s-aks
 
 kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver, secrets-store-provider-azure)'
+
+
+# RBAC - ManagedIdentity p-we1aks-aks-agentpool delegated Managed Identity Operator on RG AgentPool
+# p-we1k8s-aks-agentpool was added as Managed Identity Operator for MC_p-we1k8s-aks_p-we1k8s-aks_westeurope
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Configure AKS Baseline
@@ -14,8 +56,6 @@ kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver, secrets-st
 kubectl apply -f ./baseline/baseline-namsepace.yaml
 kubectl apply -f ./baseline/aad-pod-identity.yaml      # this might need to be exectuted 2 times, to apply podidentityexceptions
 
-
-SecretProviderClass
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Configure Application
