@@ -285,7 +285,7 @@
     },
 
 
-    // Private DNS Zone - AKS
+    // Private DNS Zone with Network Link - AKS
 
     {
       "type": "Microsoft.Network/privateDnsZones",
@@ -315,7 +315,7 @@
     },
 
 
-    // Private DNS Zone - AKS Ingress
+    // Private DNS Zone with Network Link and A Record - AKS Ingress
 
     {
       "type": "Microsoft.Network/privateDnsZones",
@@ -410,6 +410,8 @@
 
     // RBAC
 
+    // AKS role ACR PULL on ACR
+
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2020-04-01-preview",
@@ -425,6 +427,9 @@
         "principalType": "ServicePrincipal"
       }
     },
+
+    // AKS role 'Managed Identity Opperator' on POD Identity
+
     {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities/providers/roleAssignments",
       "apiVersion": "2020-04-01-preview",
@@ -440,7 +445,7 @@
       }
     },
 
-    // RBAC - AKS Cluster
+    // RBAC - AKS Cluster Admins
 
     {
 
@@ -458,6 +463,9 @@
         "principalType": "Group"
       }
     },
+
+    // RBAC - AKS Cluster User
+
     {
 
       "type": "Microsoft.Authorization/roleAssignments",
@@ -509,7 +517,8 @@
     //     }
     // },
 
-    // this resource only applies once!
+    // RBAC - AKS has 'Network Operator' over VNET SUBNETS
+
     {
       "type": "Microsoft.Resources/deployments",
       "name": "EnsureClusterIdentityHasRbacToSelfManagedResources",
@@ -553,6 +562,9 @@
         }
       }
     },
+
+    // RBAC - AKS has 'Virtual Machine Contributor' over Node Resource Group
+
     {
       "type": "Microsoft.Resources/deployments",
       "name": "EnsureClusterUserAssignedHasRbacToManageVMSS",
@@ -725,7 +737,6 @@
           "managed": true,
           "enableAzureRBAC": true,
           "adminGroupObjectIDs": "[array(parameters('clusterAdminAadGroupObjectId'))]",
-
           "tenantID": "[parameters('k8sControlPlaneAuthorizationTenantId')]"
         },
         "autoScalerProfile": {
