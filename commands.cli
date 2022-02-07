@@ -1,4 +1,13 @@
 # ---------------------------------------------------------------------------------------------------------------------
+# Configure AKS Configuration
+#
+
+# Ensure the cluster has the AKS to Keyvault Secrets Provider enabled
+az aks enable-addons --addons azure-keyvault-secrets-provider --name p-we1k8s-aks --resource-group p-we1k8s-aks
+
+kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver, secrets-store-provider-azure)'
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Configure AKS Baseline
 #
 
@@ -12,10 +21,13 @@ SecretProviderClass
 # Configure Application
 #
 
-kubectl apply -f ./portop/portop-namsepace.yaml 
+kubectl apply -f ./portop/portop-namespace.yaml 
 kubectl apply -f ./portop/traefik-podidentity-binding.yaml
 kubectl apply -f ./portop/traefik-tls-secret-keyvault.yaml
 
            
- 
+$ACR_NAME=walwilrepo
 az acr import --source docker.io/library/traefik:v2.5.3 -n $ACR_NAME_AKS_BASELINE
+az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME_AKS_BASELINE
+
+kubectl apply -f ./portop/traefik.yaml
