@@ -787,10 +787,10 @@
           "skip-nodes-with-system-pods": "true"
         },
         "apiServerAccessProfile": {
-          "authorizedIPRanges": "[parameters('clusterAuthorizedIPRanges')]",
-          "enablePrivateCluster": false // true
-          // "privateDNSZone": "system",
-          // "enablePrivateClusterPublicFQDN": true
+          //"authorizedIPRanges": "[parameters('clusterAuthorizedIPRanges')]",
+          "enablePrivateCluster":  true, //false
+          "privateDNSZone": "system",
+          "enablePrivateClusterPublicFQDN": true
         },
         "podIdentityProfile": {
           "enabled": false, /* This feature is currently in preview and will eventually replace the aad-pod-identity configuration set up by hand in this reference implementation */

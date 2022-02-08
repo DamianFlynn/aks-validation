@@ -35,10 +35,22 @@ az deployment group create -g $aksRG \
 
 sudo apt update
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+sudo chown -R azureuser /home/azureuser/.azure
 
 sudo az aks install-cli
 kubectl version --client
+kubectl get nodes
 
+
+# Testing Connections
+#
+kubectl create namespace debugging
+kubectl run curl -n debugging -i --tty --rm --image=mcr.microsoft.com/azure-cli --overrides='[{"op":"add","path":"/spec/containers/0/resources","value":{"limits":{"cpu":"200m","memory":"128Mi"}}}]' --override-type json
+
+# From within the open shell now running on a container inside your cluster
+DOMAIN_NAME="p3.walwil.com" # <-- Change to your custom domain value if a different one was used
+curl -kI https://bu0001a0008-00.aks-ingress.p3.walwil.com -w '%{remote_ip}\n'
+exit
 
 
 # ---------------------------------------------------------------------------------------------------------------------
