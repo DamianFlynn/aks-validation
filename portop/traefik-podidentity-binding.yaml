@@ -5,7 +5,7 @@ metadata:
   namespace: portop
 spec:
   type: 0
-  resourceID: /subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/p-we1k8s-aks/providers/Microsoft.ManagedIdentity/userAssignedIdentities/p-we1k8s-aks-pods-identity # $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
+  resourceID: /subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourceGroups/p-we1k8s-aks/providers/Microsoft.ManagedIdentity/userAssignedIdentities/p-we1k8s-aks-pods-identity
   clientID: 08ea7bcb-7bf6-4404-8d37-f891ecea241a #$TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
 ---
 apiVersion: aadpodidentity.k8s.io/v1

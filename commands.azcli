@@ -54,7 +54,7 @@ exit
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Configure AKS Configuration\ 
+# Configure AKS Configuration
 #
 
 # Ensure the cluster has the AKS to Keyvault Secrets Provider enabled
@@ -70,7 +70,7 @@ kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver, secrets-st
 # Configure AKS Baseline
 #
 
-kubectl apply -f ./baseline/baseline-namsepace.yaml
+kubectl apply -f ./baseline/baseline-namespace.yaml
 kubectl apply -f ./baseline/aad-pod-identity.yaml      # this might need to be exectuted 2 times, to apply podidentityexceptions
 
 
@@ -79,7 +79,10 @@ kubectl apply -f ./baseline/aad-pod-identity.yaml      # this might need to be e
 #
 
 kubectl apply -f ./portop/portop-namespace.yaml 
+
+# Update the Resource ID of the Identity: p-we1k8s-aks-pods-identity
 kubectl apply -f ./portop/traefik-podidentity-binding.yaml
+
 kubectl apply -f ./portop/traefik-tls-secret-keyvault.yaml
 
            
