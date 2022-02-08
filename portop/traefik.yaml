@@ -169,7 +169,7 @@ metadata:
     service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
 spec:
   type: LoadBalancer
-  loadBalancerIP: 10.240.4.4
+  loadBalancerIP: 10.182.18.4 # Resources Subnet
   externalTrafficPolicy: Local
   selector:
     app.kubernetes.io/name: traefik-ingress-ilb
@@ -230,7 +230,7 @@ spec:
         # az acr import --source docker.io/library/traefik:v2.5.3 -n <your-acr-instance-name>
         # and then set this to
         # image: <your-acr-instance-name>.azurecr.io/library/traefik:v2.5.3
-      - image: walwilrepo.azurecr.io/library/traefik:v2.5.3
+      - image: walwilreg.azurecr.io/library/traefik:v2.5.3
         name: traefik-ingress-controller
         resources:
           requests:

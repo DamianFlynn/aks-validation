@@ -117,9 +117,16 @@ az role assignment delete --ids $TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT
 
 kubectl apply -f ./portop/traefik-tls-secret-keyvault.yaml
 
-           
-$ACR_NAME=walwilrepo
-az acr import --source docker.io/library/traefik:v2.5.3 -n $ACR_NAME_AKS_BASELINE
-az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME_AKS_BASELINE
+#
+# Now - Lets import some Containers into our registy for deployment to the cluster
+#           
+ACR_NAME=walwilreg
+az acr import --source docker.io/library/traefik:v2.5.3 -n $ACR_NAME
+az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME
 
+#
+# Deploy the Traefik Reverse Proxy Service
+#
+
+# Make sure to update the Load Balancer IP, and the Container Registry
 kubectl apply -f ./portop/traefik.yaml
