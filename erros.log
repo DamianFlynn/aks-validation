@@ -1,131 +1,26 @@
-{
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "managedClusters_p_we1k8s_aks_name": {
-            "defaultValue": "p-we1k8s-aks",
-            "type": "String"
-        },
-        "virtualNetworks_p_we1k8s_net_vnet_externalid": {
-            "defaultValue": "/subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/p-we1k8s-net/providers/Microsoft.Network/virtualNetworks/p-we1k8s-net-vnet",
-            "type": "String"
-        },
-        "workspaces_p_we1k8s_ws_externalid": {
-            "defaultValue": "/subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/DefaultResourceGroup-WEU/providers/Microsoft.OperationalInsights/workspaces/p-we1k8s-ws",
-            "type": "String"
-        },
-        "publicIPAddresses_c4ec5abf_9714_448d_a5a5_e32c7cb75438_externalid": {
-            "defaultValue": "/subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/MC_p-we1k8s-aks_p-we1k8s-aks_westeurope/providers/Microsoft.Network/publicIPAddresses/c4ec5abf-9714-448d-a5a5-e32c7cb75438",
-            "type": "String"
-        },
-        "userAssignedIdentities_p_we1k8s_aks_agentpool_externalid": {
-            "defaultValue": "/subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/MC_p-we1k8s-aks_p-we1k8s-aks_westeurope/providers/Microsoft.ManagedIdentity/userAssignedIdentities/p-we1k8s-aks-agentpool",
-            "type": "String"
-        }
-    },
-    "variables": {},
-    "resources": [
-        {
+E0208 20:56:01.121293       1 mic.go:1129]
+
+ failed to apply binding portop/podmi-ingress-controller-binding node aks-npuser01-19673818-vmss000000 for pod portop/traefik-ingress-
+controller-669ff5b5d6-v2ms4, 
+
+error: failed to update identities for aks-npuser01-19673818-vmss in p-we1k8s-aks-nodepools,
+ error: compute.VirtualMachineScaleSetsClient
+ #Update: Failure sending request: StatusCode=0 -- Original 
+ Error: Code="LinkedAuthorizationFailed" 
+ Message="The client '5bdd7fe2-348d-4b30-aeeb-58d1359dee15' with object id '5bdd7fe2-348d-4b30-aeeb-58d1359dee15' 
+ has permission to perform action 'Microsoft.Compute/virtualMachineScaleSets/write' on scope 
+ '/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourceGroups/p-we1k8s-aks-nodepools/providers/Microsoft.Compute/virtualMachineScaleSets/aks-npuser01-19673818-vmss'; however, it does not have permission to perform action 'Micros
+oft.ManagedIdentity/userAssignedIdentities/assign/action' 
+on the linked scope(s) 
+'/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-we1k8s-aks/providers/microsoft.managedidentity/userassignedidentities/p-we1k8s-aks-pods-identity' 
+or the linked scope(s) are invalid."
 
 
-
-            "properties": {
-                
-                "dnsPrefix": "[concat(parameters('managedClusters_p_we1k8s_aks_name'), '-dns')]",
-
-
-                "windowsProfile": {
-                    "adminUsername": "azureuser",
-                    "enableCSIProxy": true
-                },
-
-
-               
-
-
-
-            }
-        },
-        {
-            "type": "Microsoft.ContainerService/managedClusters/agentPools",
-            "apiVersion": "2021-10-01",
-            "name": "[concat(parameters('managedClusters_p_we1k8s_aks_name'), '/agentpool')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('managedClusters_p_we1k8s_aks_name'))]"
-            ],
-            "properties": {
-                "count": 1,
-                "vmSize": "Standard_DS2_v2",
-                "osDiskSizeGB": 128,
-                "osDiskType": "Managed",
-                "kubeletDiskType": "OS",
-                "vnetSubnetID": "[concat(parameters('virtualNetworks_p_we1k8s_net_vnet_externalid'), '/subnets/nodepoolSubnet')]",
-                "maxPods": 110,
-                "type": "VirtualMachineScaleSets",
-                "availabilityZones": [
-                    "1",
-                    "2",
-                    "3"
-                ],
-                "maxCount": 5,
-                "minCount": 1,
-                "enableAutoScaling": true,
-                "powerState": {
-                    "code": "Running"
-                },
-                "orchestratorVersion": "1.21.7",
-                "enableNodePublicIP": false,
-                "tags": {
-                    "creationSource": "aks-tf",
-                    "creator": "Damian Flynn"
-                },
-                "mode": "System",
-                "osType": "Linux",
-                "osSKU": "Ubuntu",
-                "enableFIPS": false
-            }
-        },
-        {
-            "type": "Microsoft.ContainerService/managedClusters/agentPools",
-            "apiVersion": "2021-10-01",
-            "name": "[concat(parameters('managedClusters_p_we1k8s_aks_name'), '/npuser01')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('managedClusters_p_we1k8s_aks_name'))]"
-            ],
-            "properties": {
-                "count": 2,
-                "vmSize": "Standard_DS3_v2",
-                "osDiskSizeGB": 128,
-                "osDiskType": "Ephemeral",
-                "kubeletDiskType": "OS",
-                "vnetSubnetID": "[concat(parameters('virtualNetworks_p_we1k8s_net_vnet_externalid'), '/subnets/nodepoolSubnet')]",
-                "maxPods": 30,
-                "type": "VirtualMachineScaleSets",
-                "availabilityZones": [
-                    "1",
-                    "2",
-                    "3"
-                ],
-                "maxCount": 5,
-                "minCount": 1,
-                "enableAutoScaling": true,
-                "scaleDownMode": "Delete",
-                "powerState": {
-                    "code": "Running"
-                },
-                "orchestratorVersion": "1.21.7",
-                "enableNodePublicIP": false,
-                "nodeTaints": [
-                    ""
-                ],
-                "mode": "User",
-                "osType": "Linux",
-                "osSKU": "Ubuntu",
-                "upgradeSettings": {
-                    "maxSurge": "33%"
-                },
-                "enableFIPS": false
-            }
-        }
-    ]
-}
+E0208 20:56:01.121339       1 mic.go:1129] failed to apply binding portop/podmi-ingress-controller-binding node aks-npuser01-19673818-vmss000002 for pod portop/traefik-ingress-
+controller-669ff5b5d6-8j7r4, error: failed to update identities for aks-npuser01-19673818-vmss in p-we1k8s-aks-nodepools, error: compute.VirtualMachineScaleSetsClient#Update: F
+ailure sending request: StatusCode=0 -- Original Error: Code="LinkedAuthorizationFailed" Message="The client '5bdd7fe2-348d-4b30-aeeb-58d1359dee15' with object id '5bdd7fe2-348
+d-4b30-aeeb-58d1359dee15' has permission to perform action 'Microsoft.Compute/virtualMachineScaleSets/write' on scope '/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resou
+rceGroups/p-we1k8s-aks-nodepools/providers/Microsoft.Compute/virtualMachineScaleSets/aks-npuser01-19673818-vmss'; however, it does not have permission to perform action 'Micros
+oft.ManagedIdentity/userAssignedIdentities/assign/action' on the linked scope(s) '/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-we1k8s-aks/providers/micr
+osoft.managedidentity/userassignedidentities/p-we1k8s-aks-pods-identity' or the linked scope(s) are invalid."
+I02

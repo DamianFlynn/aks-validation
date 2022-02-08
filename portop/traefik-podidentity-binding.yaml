@@ -1,12 +1,12 @@
 apiVersion: aadpodidentity.k8s.io/v1
-kind: AzureIdentity  # Demo https://azure.github.io/aad-pod-identity/docs/demo/
+kind: AzureIdentity
 metadata:
   name: podmi-ingress-controller-identity
   namespace: portop
 spec:
   type: 0
-  resourceID: /subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourceGroups/p-we1k8s-aks/providers/Microsoft.ManagedIdentity/userAssignedIdentities/p-we1k8s-aks-pods-identity
-  clientID: 08ea7bcb-7bf6-4404-8d37-f891ecea241a #$TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
+  resourceID: /subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-we1k8s-aks/providers/Microsoft.ManagedIdentity/userAssignedIdentities/p-we1k8s-aks-pods-identity #$TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
+  clientID: 82fdbf7e-cc2b-4fde-ae60-2698c6def6c0 #$TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
 ---
 apiVersion: aadpodidentity.k8s.io/v1
 kind: AzureIdentityBinding

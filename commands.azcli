@@ -82,6 +82,11 @@ kubectl apply -f ./baseline/aad-pod-identity.yaml      # this might need to be e
 kubectl apply -f ./portop/portop-namespace.yaml 
 
 # Update the Resource ID of the Identity: p-we1k8s-aks-pods-identity
+
+TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az identity show -g p-we1k8s-aks -n p-we1k8s-aks-pods-identity --query 'id' -o tsv)
+TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az identity show -g p-we1k8s-aks -n p-we1k8s-aks-pods-identity --query 'clientId' -o tsv)
+
+
 kubectl apply -f ./portop/traefik-podidentity-binding.yaml
 
 
