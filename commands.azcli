@@ -1,64 +1,44 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# Configure AZ
+# Configure AZ Hub and Spoke
+#
+
+
+cd tf/scaffold
+terraform init -backend-config=azure.conf
+terraform plan
+terraform apply
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Configure AKS Environment
 #
 
 subId=283dd4da-759e-4ceb-a6ef-618ebebb7705
-envName=p-we1k8s
 az account set --subscription $subId
 
-# Networking
-
+envName=p-we1k8s
 netRG=$envName-net
-az group create --name $netRG --location westeurope
-
-az network vnet create \
-    --resource-group $netRG \
-    --name $netRG-vnet \
-    --address-prefixes 10.240.0.0/16 \
-    --subnet-name nodepoolSubnet \
-    --subnet-prefix 10.240.0.0/22
-
-az network vnet subnet update \
-    --resource-group $netRG \
-    --name nodepoolSubnet \
-    --vnet-name $netRG-vnet \
-    --disable-private-endpoint-network-policies true 
-
-az network vnet subnet create \
-    --name "resourcesSubnet" \
-    --vnet-name $netRG-vnet \
-    --resource-group $netRG \
-    --address-prefixes 10.240.4.0/28
-
-az network vnet subnet create \
-    --name "appgatewaySubnet" \
-    --vnet-name $netRG-vnet \
-    --resource-group $netRG \
-    --address-prefixes 10.240.4.16/28
-
-az network vnet subnet create \
-    --name "AzureBastionSubnet" \
-    --vnet-name $netRG-vnet \
-    --resource-group $netRG \
-    --address-prefixes 10.240.5.0/26
-
-
+aksRG=$envName-aks
 VNET_ID=$(az network vnet show --resource-group $netRG --name $netRG-vnet --query id -o tsv)
-SUBNET_ID=$(az network vnet subnet show --resource-group $netRG --vnet-name $netRG-vnet --name nodepoolSubnet --query id -o tsv)
+LOGS_ID=/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-mgt-log/providers/microsoft.operationalinsights/workspaces/p-mgt-log-ws
+ACR_ID=/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourceGroups/p-we1k8s-acr/providers/Microsoft.ContainerRegistry/registries/WalWilReg
+
+cd ../..
+az deployment group create -g $aksRG \
+    --template-file ./arm-module/aks.json \
+    --parameters targetVnetResourceId=$VNET_ID logAnalyticsWorkspaceId=$LOGS_ID azureContainerRegistryId=$ACR_ID
 
 
-az role assignment create --assignee <appId> --scope $VNET_ID --role "Network Contributor"
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Configure AKS
 #
 
-aksRG=$envName-aks
-az group create --name $aksRG --location westeurope
+sudo apt update
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
-az deployment group create -g $aksRG \
-    --template-file ./arm-module/aks.json \
-    --parameters targetVnetResourceId=$VNET_ID
+sudo az aks install-cli
+kubectl version --client
+
 
 
 # ---------------------------------------------------------------------------------------------------------------------

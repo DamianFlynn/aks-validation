@@ -77,8 +77,8 @@
     "vnetName": "[split(parameters('targetVnetResourceId'),'/')[8]]",
     "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
 
-    "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/nodepoolSubnet')]",
-    "vnetIngressServicesSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/resourcesSubnet')]",
+    "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/NodePoolSubnet')]",
+    "vnetIngressServicesSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/ResourcesSubnet')]",
 
 
     //PrivateDNS
@@ -335,7 +335,7 @@
             "ttl": 3600,
             "aRecords": [
               {
-                "ipv4Address": "10.240.4.4"
+                "ipv4Address": "10.182.17.4"
               }
             ]
           }
@@ -363,7 +363,7 @@
     {
       "type": "Microsoft.Network/privateEndpoints",
       "apiVersion": "2020-05-01",
-      "name": "nodepools-to-akv",
+      "name": "nodepools-to-akv", //p-we1k8s-aks-kv_nodepoolSubnet_PrivateEndpoint
       "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
@@ -433,7 +433,7 @@
     {
       "type": "Microsoft.ManagedIdentity/userAssignedIdentities/providers/roleAssignments",
       "apiVersion": "2020-04-01-preview",
-      "name": "[concat('podmi-ingress-controller', '/Microsoft.Authorization/', guid(resourceGroup().id, 'podmi-ingress-controller', variables('managedIdentityOperatorRole')))]",
+      "name": "[concat(variables('mi-pod-identity'), '/Microsoft.Authorization/', guid(resourceGroup().id, variables('mi-pod-identity'), variables('managedIdentityOperatorRole')))]",
       "comments": "Grant the AKS cluster with Managed Identity Operator role permissions over the managed identity used for the ingress controller. Allows it to be assigned to the underlying VMSS.",
       "dependsOn": [
         "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
@@ -631,6 +631,11 @@
             "osDiskSizeGB": 80,
             "osDiskType": "Ephemeral",
             "osType": "Linux",
+            "osSKU": "Ubuntu",
+            "kubeletDiskType": "OS",
+            "powerState": {
+              "code": "Running"
+            },
             "minCount": 3,
             "maxCount": 5,
             "vnetSubnetID": "[variables('vnetNodePoolSubnetResourceId')]",
@@ -646,7 +651,7 @@
               "creationSource": "aks-tf",
               "creator": "Damian Flynn"
             },
-            "maxPods": 30,
+            "maxPods": 110,
             "availabilityZones": [
               "1",
               "2",
@@ -657,7 +662,8 @@
             },
             "nodeTaints": [
               "CriticalAddonsOnly=true:NoSchedule"
-            ]
+            ],
+            "enableFIPS": false
           },
           {
             "name": "npuser01",
@@ -666,7 +672,8 @@
             "osDiskSizeGB": 120,
             "osDiskType": "Ephemeral",
             "osType": "Linux",
-            "minCount": 2,
+            "osSKU": "Ubuntu",
+            "minCount": 1,
             "maxCount": 5,
             "vnetSubnetID": "[variables('vnetNodePoolSubnetResourceId')]",
             "enableAutoScaling": true,
@@ -674,6 +681,11 @@
             "mode": "User",
             "scaleSetPriority": "Regular",
             "scaleSetEvictionPolicy": "Delete",
+            "kubeletDiskType": "OS",
+            "scaleDownMode": "Delete",
+            "powerState": {
+              "code": "Running"
+            },
             "orchestratorVersion": "[parameters('kubernetesVersion')]",
             "enableNodePublicIP": false,
             "maxPods": 30,
@@ -684,7 +696,11 @@
             ],
             "upgradeSettings": {
               "maxSurge": "33%"
-            }
+            },
+            "nodeTaints": [
+              ""
+            ],
+            "enableFIPS": false
           }
         ],
         "servicePrincipalProfile": {
@@ -715,7 +731,8 @@
           "azureKeyvaultSecretsProvider": {
             "enabled": true,
             "config": {
-              "enableSecretRotation": "false"
+              "enableSecretRotation": "false",
+              "rotationPollInterval": "2m"
             }
           }
         },
@@ -726,8 +743,19 @@
         "networkProfile": {
           "networkPlugin": "azure",
           "networkPolicy": "azure",
-          "outboundType": "userDefinedRouting",
+          "outboundType": "userDefinedRouting", 
+          // "outboundType": "loadBalancer",
           "loadBalancerSku": "standard",
+          // "loadBalancerProfile": {
+          //   "managedOutboundIPs": {
+          //     "count": 1
+          //   },
+          //   "effectiveOutboundIPs": [
+          //     {
+          //       "id": "[parameters('publicIPAddresses_c4ec5abf_9714_448d_a5a5_e32c7cb75438_externalid')]"
+          //     }
+          //   ]
+          // },
           "loadBalancerProfile": "[json('null')]",
           "serviceCidr": "172.16.0.0/16",
           "dnsServiceIP": "172.16.0.10",
@@ -760,7 +788,7 @@
         },
         "apiServerAccessProfile": {
           "authorizedIPRanges": "[parameters('clusterAuthorizedIPRanges')]",
-          "enablePrivateCluster": false
+          "enablePrivateCluster": false // true
           // "privateDNSZone": "system",
           // "enablePrivateClusterPublicFQDN": true
         },
@@ -770,6 +798,28 @@
           "userAssignedIdentityExceptions": []
         },
         "disableLocalAccounts": true
+        // "windowsProfile": {
+        //     "adminUsername": "azureuser",
+        //     "enableCSIProxy": true
+        // },
+        // "privateLinkResources": [
+        //     {
+        //         "id": "[concat(resourceId('Microsoft.ContainerService/managedClusters', parameters('managedClusters_p_we1k8s_aks_name')), '/privateLinkResources/management')]",
+        //         "name": "management",
+        //         "type": "Microsoft.ContainerService/managedClusters/privateLinkResources",
+        //         "groupId": "management",
+        //         "requiredMembers": [
+        //             "management"
+        //         ]
+        //     }
+        // ],
+        // "identityProfile": {
+        //     "kubeletidentity": {
+        //         "resourceId": "[parameters('userAssignedIdentities_p_we1k8s_aks_agentpool_externalid')]",
+        //         "clientId": "df87d8ea-6321-4d7c-b481-f7e1c9b0b966",
+        //         "objectId": "922e19ca-c90d-4f3a-b80c-7c0231dc932f"
+        //     }
+        // },
       },
       "identity": {
         "type": "UserAssigned",
@@ -779,7 +829,7 @@
       },
       "sku": {
         "name": "Basic",
-        "tier": "Paid"
+        "tier": "Paid" // "Free"
       },
       "resources": [
         // {
@@ -924,7 +974,7 @@
             "[resourceId('Microsoft.EventGrid/systemTopics', variables('clusterName'))]"
           ],
           "properties": {
-            "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+            "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
             "logs": [
               {
                 "category": "DeliveryFailures",

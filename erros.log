@@ -1,14 +1,131 @@
- failed to update user-assigned identities on node aks-npuser01-35024227-vmss (add [2], del [0], update[0]), error: failed to g
-et identity resource, error: failed to get vmss aks-npuser01-35024227-vmss in resource group MC_p-we1k8s-aks_p-we1k8s-aks_westeurope, error: failed to get vmss aks-npuse
-r01-35024227-vmss in resource group MC_p-we1k8s-aks_p-we1k8s-aks_westeurope, error: compute.VirtualMachineScaleSetsClient#Get: Failure responding to request: StatusCode=
-403 -- Original Error: autorest/azure: Service returned an error. Status=403 Code="AuthorizationFailed" Message="The client '922e19ca-c90d-4f3a-b80c-7c0231dc932f' with o
-bject id '922e19ca-c90d-4f3a-b80c-7c0231dc932f' does not have authorization to perform action 'Microsoft.Compute/virtualMachineScaleSets/read' over scope '/subscriptions
-/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/MC_p-we1k8s-aks_p-we1k8s-aks_westeurope/providers/Microsoft.Compute/virtualMachineScaleSets/aks-npuser01-35024227-vm
-ss' or the scope is invalid. If access was recently granted, please refresh your credentials."
-E0207 12:39:58.799868       1 mic.go:1114] failed to get a list of user-assigned identites from node aks-npuser01-35024227-vmss, error: failed to get identity resource, 
-error: failed to get vmss aks-npuser01-35024227-vmss in resource group MC_p-we1k8s-aks_p-we1k8s-aks_westeurope, error: failed to get vmss aks-npuser01-35024227-vmss in r
-esource group MC_p-we1k8s-aks_p-we1k8s-aks_westeurope, error: compute.VirtualMachineScaleSetsClient#Get: Failure responding to request: StatusCode=403 -- Original Error:
- autorest/azure: Service returned an error. Status=403 Code="AuthorizationFailed" Message="The client '922e19ca-c90d-4f3a-b80c-7c0231dc932f' with object id '922e19ca-c90
-d-4f3a-b80c-7c0231dc932f' does not have authorization to perform action 'Microsoft.Compute/virtualMachineScaleSets/read' over scope '/subscriptions/3cb7d033-6a8a-40b5-b1
-69-2353436f9b64/resourceGroups/MC_p-we1k8s-aks_p-we1k8s-aks_westeurope/providers/Microsoft.Compute/virtualMachineScaleSets/aks-npuser01-35024227-vmss' or the scope is in
-valid. If access was recently granted, please refresh your credentials."
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "managedClusters_p_we1k8s_aks_name": {
+            "defaultValue": "p-we1k8s-aks",
+            "type": "String"
+        },
+        "virtualNetworks_p_we1k8s_net_vnet_externalid": {
+            "defaultValue": "/subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/p-we1k8s-net/providers/Microsoft.Network/virtualNetworks/p-we1k8s-net-vnet",
+            "type": "String"
+        },
+        "workspaces_p_we1k8s_ws_externalid": {
+            "defaultValue": "/subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/DefaultResourceGroup-WEU/providers/Microsoft.OperationalInsights/workspaces/p-we1k8s-ws",
+            "type": "String"
+        },
+        "publicIPAddresses_c4ec5abf_9714_448d_a5a5_e32c7cb75438_externalid": {
+            "defaultValue": "/subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/MC_p-we1k8s-aks_p-we1k8s-aks_westeurope/providers/Microsoft.Network/publicIPAddresses/c4ec5abf-9714-448d-a5a5-e32c7cb75438",
+            "type": "String"
+        },
+        "userAssignedIdentities_p_we1k8s_aks_agentpool_externalid": {
+            "defaultValue": "/subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourceGroups/MC_p-we1k8s-aks_p-we1k8s-aks_westeurope/providers/Microsoft.ManagedIdentity/userAssignedIdentities/p-we1k8s-aks-agentpool",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+
+
+
+            "properties": {
+                
+                "dnsPrefix": "[concat(parameters('managedClusters_p_we1k8s_aks_name'), '-dns')]",
+
+
+                "windowsProfile": {
+                    "adminUsername": "azureuser",
+                    "enableCSIProxy": true
+                },
+
+
+               
+
+
+
+            }
+        },
+        {
+            "type": "Microsoft.ContainerService/managedClusters/agentPools",
+            "apiVersion": "2021-10-01",
+            "name": "[concat(parameters('managedClusters_p_we1k8s_aks_name'), '/agentpool')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('managedClusters_p_we1k8s_aks_name'))]"
+            ],
+            "properties": {
+                "count": 1,
+                "vmSize": "Standard_DS2_v2",
+                "osDiskSizeGB": 128,
+                "osDiskType": "Managed",
+                "kubeletDiskType": "OS",
+                "vnetSubnetID": "[concat(parameters('virtualNetworks_p_we1k8s_net_vnet_externalid'), '/subnets/nodepoolSubnet')]",
+                "maxPods": 110,
+                "type": "VirtualMachineScaleSets",
+                "availabilityZones": [
+                    "1",
+                    "2",
+                    "3"
+                ],
+                "maxCount": 5,
+                "minCount": 1,
+                "enableAutoScaling": true,
+                "powerState": {
+                    "code": "Running"
+                },
+                "orchestratorVersion": "1.21.7",
+                "enableNodePublicIP": false,
+                "tags": {
+                    "creationSource": "aks-tf",
+                    "creator": "Damian Flynn"
+                },
+                "mode": "System",
+                "osType": "Linux",
+                "osSKU": "Ubuntu",
+                "enableFIPS": false
+            }
+        },
+        {
+            "type": "Microsoft.ContainerService/managedClusters/agentPools",
+            "apiVersion": "2021-10-01",
+            "name": "[concat(parameters('managedClusters_p_we1k8s_aks_name'), '/npuser01')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', parameters('managedClusters_p_we1k8s_aks_name'))]"
+            ],
+            "properties": {
+                "count": 2,
+                "vmSize": "Standard_DS3_v2",
+                "osDiskSizeGB": 128,
+                "osDiskType": "Ephemeral",
+                "kubeletDiskType": "OS",
+                "vnetSubnetID": "[concat(parameters('virtualNetworks_p_we1k8s_net_vnet_externalid'), '/subnets/nodepoolSubnet')]",
+                "maxPods": 30,
+                "type": "VirtualMachineScaleSets",
+                "availabilityZones": [
+                    "1",
+                    "2",
+                    "3"
+                ],
+                "maxCount": 5,
+                "minCount": 1,
+                "enableAutoScaling": true,
+                "scaleDownMode": "Delete",
+                "powerState": {
+                    "code": "Running"
+                },
+                "orchestratorVersion": "1.21.7",
+                "enableNodePublicIP": false,
+                "nodeTaints": [
+                    ""
+                ],
+                "mode": "User",
+                "osType": "Linux",
+                "osSKU": "Ubuntu",
+                "upgradeSettings": {
+                    "maxSurge": "33%"
+                },
+                "enableFIPS": false
+            }
+        }
+    ]
+}
