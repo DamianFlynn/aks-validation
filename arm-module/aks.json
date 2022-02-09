@@ -78,7 +78,7 @@
     "vNetResourceGroup": "[split(parameters('targetVnetResourceId'),'/')[4]]",
 
     "vnetNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/NodePoolSubnet')]",
-    "vnetIngressServicesSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/ResourcesSubnet')]",
+    "vnetIngressServicesSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/ResourceSubnet')]",
 
 
     //PrivateDNS
