@@ -1,3 +1,12 @@
+# Dont include terraform staging
 .terraform/
 .terraform.*
+
+# Keep Secrets for TF out
 azure.conf
+
+# Keep Certs out of the GIT Repo
+*.pfx
+*.pem
+*.key
+*.crt

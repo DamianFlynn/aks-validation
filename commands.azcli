@@ -122,6 +122,7 @@ cat ./certs/traefik-ingress-internal-aks-ingress-tls.crt ./certs/traefik-ingress
 
 # Import the AKS Ingress Controller's Wildcard Certificate for *.aks-ingress.contoso.com.
 az keyvault certificate import -f ./certs/traefik-ingress-internal-aks-ingress-tls.pem -n traefik-ingress-internal-aks-ingress-tls --vault-name $KEYVAULT_NAME
+az keyvault certificate import -f ./certs/s-aks-v2-kv-wildcard-p3-walwil-com-20220209.pfx -n wildcard-p3-walwil-com --vault-name $KEYVAULT_NAME
 
 
 # Remove Azure Key Vault import certificates permissions and network access for current user.
