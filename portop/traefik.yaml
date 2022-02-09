@@ -166,7 +166,7 @@ metadata:
     app.kubernetes.io/instance: traefik-ingress-ilb
   annotations:
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
+    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "ResourceSubnet"
 spec:
   type: LoadBalancer
   loadBalancerIP: 10.182.18.4 # ResourcesSubnet
