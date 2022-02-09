@@ -44,12 +44,12 @@ spec:
       - name: portop-angular-app
         image: walwilreg.azurecr.io/portop-angular-app:latest
         imagePullPolicy: Always
-        securityContext:
-          # allowPrivilegeEscalation: false
-          # readOnlyRootFilesystem: false
-          # capabilities:
-          #   drop:
-          #     - all
+        # securityContext:
+        #   allowPrivilegeEscalation: false
+        #   readOnlyRootFilesystem: false
+        #   capabilities:
+        #     drop:
+        #       - all
         resources:
           requests:
             cpu: 100m
