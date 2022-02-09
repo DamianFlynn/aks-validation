@@ -6,7 +6,7 @@ metadata:
 spec:
   type: 0
   resourceID: /subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-we1k8s-aks/providers/Microsoft.ManagedIdentity/userAssignedIdentities/p-we1k8s-aks-pods-identity #$TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
-  clientID: 82fdbf7e-cc2b-4fde-ae60-2698c6def6c0 #$TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
+  clientID: 5590ad2e-a2e4-48be-852b-3e25afd6dcd9 #$TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
 ---
 apiVersion: aadpodidentity.k8s.io/v1
 kind: AzureIdentityBinding

@@ -39,11 +39,16 @@ az deployment group create -g $aksRG \
 # Configure AKS
 #
 
+#
+# Configure Jumpbox
+#
+
 sudo apt update
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 sudo az aks install-cli
 sudo chown -R azureuser /home/azureuser/.azure
-
+az login
+az aks get-credentials -n p-we1k8s-aks -g p-we1k8s-aks
 
 kubectl version --client
 kubectl get nodes
@@ -65,7 +70,7 @@ exit
 #
 
 # Ensure the cluster has the AKS to Keyvault Secrets Provider enabled
-az aks enable-addons --addons azure-keyvault-secrets-provider --name p-we1k8s-aks --resource-group p-we1k8s-aks
+#az aks enable-addons --addons azure-keyvault-secrets-provider --name p-we1k8s-aks --resource-group p-we1k8s-aks
 
 kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver, secrets-store-provider-azure)'
 
