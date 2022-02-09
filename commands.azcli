@@ -206,11 +206,11 @@ kubectl apply -f portop/portop-cargo-detail.yaml
 kubectl apply -f portop/portop-angular-app.yaml
 
 
+#
+# Debugging Tools
+#
+
+# Run a pod on your cluster, do not restart it when it crashes, and provide a shell interactive experience.
+# Destroy the pod once the shell session is terminated
 kubectl run -it --rm --restart=Never portop-angular-test --image=walwilreg.azurecr.io/portop-angular-app:latest sh
-
-
-ENV API_URL='https://potop-get-cargo-details.azure-api.net/dev/'
-
-# CMD ["nginx", "-g", "daemon off;"]
-CMD ["/bin/sh",  "-c",  "envsubst < /usr/share/nginx/html/assets/env.template.js > /usr/share/nginx/html/assets/env.js && exec nginx -g 'daemon off;'"]
 

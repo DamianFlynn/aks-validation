@@ -1,0 +1,230 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "defaultValue": "westeurope",
+      "type": "string"
+    },
+    "logAnalyticsWorkspaceId": {
+      "defaultValue": "/subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourcegroups/p-we1k8s-aks/providers/microsoft.operationalinsights/workspaces/p-we1k8s-aks-ws",
+      "type": "string"
+    }
+  },
+  "variables": {
+    "keyVaultName": "p-we1k8s-aks-20220210-kv",
+    "agwName": "p-we1k8s-aks-agw",
+
+    // Roles
+
+    "keyVaultReader": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/21090545-7ca7-4776-b22c-e363652d74d2')]",
+    "keyVaultSecretsUserRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6')]",
+
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/applicationGateways",
+      "apiVersion": "2020-05-01",
+      "name": "[variables('agwName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+        "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]",
+        "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultReader')))]",
+        "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultSecretsUserRole')))]"
+      ],
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',  'mi-appgateway-frontend')]": {}
+        }
+      },
+      "zones": "[pickZones('Microsoft.Network', 'applicationGateways', parameters('location'), 3)]",
+      "properties": {
+        "sku": {
+          "name": "WAF_v2",
+          "tier": "WAF_v2"
+        },
+        "sslPolicy": {
+          "policyType": "Custom",
+          "cipherSuites": [
+            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+          ],
+          "minProtocolVersion": "TLSv1_2"
+        },
+        "trustedRootCertificates": [
+          {
+            "name": "root-cert-wildcard-aks-ingress",
+            "properties": {
+              "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/appgw-ingress-internal-aks-ingress-tls')]"
+            }
+          }
+        ],
+        "gatewayIPConfigurations": [
+          {
+            "name": "apw-ip-configuration",
+            "properties": {
+              "subnet": {
+                "id": "[parameters('targetVnetResourceId'), '/subnets/snet-applicationgateway')]"
+              }
+            }
+          }
+        ],
+        "frontendIPConfigurations": [
+          {
+            "name": "apw-frontend-ip-configuration",
+            "properties": {
+              "PublicIPAddress": {
+                "id": "[resourceId(subscription().subscriptionId, variables('vNetResourceGroup'), 'Microsoft.Network/publicIpAddresses', 'pip-BU0001A0008-00')]"
+              }
+            }
+          }
+        ],
+        "frontendPorts": [
+          {
+            "name": "port-443",
+            "properties": {
+              "port": 443
+            }
+          }
+        ],
+        "autoscaleConfiguration": {
+          "minCapacity": 0,
+          "maxCapacity": 10
+        },
+        "webApplicationFirewallConfiguration": {
+          "enabled": true,
+          "firewallMode": "Prevention",
+          "ruleSetType": "OWASP",
+          "ruleSetVersion": "3.2",
+          "exclusions": [],
+          "fileUploadLimitInMb": 10,
+          "disabledRuleGroups": []
+        },
+        "enableHttp2": false,
+        "sslCertificates": [
+          {
+            "name": "[concat(variables('agwName'), '-ssl-certificate')]",
+            "properties": {
+              "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/gateway-public-cert')]"
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[concat('probe-', variables('aksBackendDomainName'))]",
+            "properties": {
+              "protocol": "Https",
+              "path": "/favicon.ico",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 3,
+              "pickHostNameFromBackendHttpSettings": true,
+              "minServers": 0,
+              "match": {
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('aksBackendDomainName')]",
+            "properties": {
+              "backendAddresses": [
+                {
+                  "fqdn": "[variables('aksBackendDomainName')]"
+                }
+              ]
+            }
+          }
+        ],
+        "backendHttpSettingsCollection": [
+          {
+            "name": "aks-ingress-backendpool-httpsettings",
+            "properties": {
+              "port": 443,
+              "protocol": "Https",
+              "cookieBasedAffinity": "Disabled",
+              "pickHostNameFromBackendAddress": true,
+              "requestTimeout": 20,
+              "probe": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/probes', variables('agwName'), concat('probe-', variables('aksBackendDomainName')))]"
+              },
+              "trustedRootCertificates": [
+                {
+                  "id": "[resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', variables('agwName'), 'root-cert-wildcard-aks-ingress')]"
+                }
+              ]
+            }
+          }
+        ],
+        "httpListeners": [
+          {
+            "name": "listener-https",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', variables('agwName'), 'apw-frontend-ip-configuration')]"
+              },
+              "frontendPort": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts', variables('agwName'), 'port-443')]"
+              },
+              "protocol": "Https",
+              "sslCertificate": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/sslCertificates', variables('agwName'),  concat(variables('agwName'), '-ssl-certificate'))]"
+              },
+              "hostName": "[concat('bicycle.', parameters('domainName'))]",
+              "hostNames": [],
+              "requireServerNameIndication": true
+            }
+          }
+        ],
+        "requestRoutingRules": [
+          {
+            "Name": "apw-routing-rules",
+            "properties": {
+              "RuleType": "Basic",
+              "httpListener": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', variables('agwName'), 'listener-https')]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', variables('agwName'), variables('aksBackendDomainName'))]"
+              },
+              "backendHttpSettings": {
+                "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', variables('agwName'), 'aks-ingress-backendpool-httpsettings')]"
+              }
+            }
+          }
+        ]
+      },
+      "resources": [
+        {
+          "type": "providers/diagnosticSettings",
+          "apiVersion": "2017-05-01-preview",
+          "name": "Microsoft.Insights/default",
+          "dependsOn": [
+            "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]"
+          ],
+          "properties": {
+            "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+            "logs": [
+              {
+                "category": "ApplicationGatewayAccessLog",
+                "enabled": true
+              },
+              {
+                "category": "ApplicationGatewayPerformanceLog",
+                "enabled": true
+              },
+              {
+                "category": "ApplicationGatewayFirewallLog",
+                "enabled": true
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
