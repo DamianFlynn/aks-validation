@@ -6,7 +6,7 @@
 cd tf/scaffold
 terraform init -backend-config=azure.conf
 terraform plan
-terraform apply
+terraform apply 
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Configure AKS Environment
@@ -59,9 +59,18 @@ kubectl get nodes
 kubectl create namespace debugging
 kubectl run curl -n debugging -i --tty --rm --image=mcr.microsoft.com/azure-cli --overrides='[{"op":"add","path":"/spec/containers/0/resources","value":{"limits":{"cpu":"200m","memory":"128Mi"}}}]' --override-type json
 
+# WARNING - THIS IS DIRECT ACCESS ON THE NODE - BE CAREFUL
 # From within the open shell now running on a container inside your cluster
-DOMAIN_NAME="p3.walwil.com" # <-- Change to your custom domain value if a different one was used
-curl -kI https://bu0001a0008-00.aks-ingress.p3.walwil.com -w '%{remote_ip}\n'
+# inside the container
+chroot /host
+
+# On the Node!
+journalctl -u kubelet -o cat
+journalctl -u kubelet -f # Follow / Tail
+
+
+#DOMAIN_NAME="p3.walwil.com" # <-- Change to your custom domain value if a different one was used
+#curl -kI https://bu0001a0008-00.aks-ingress.p3.walwil.com -w '%{remote_ip}\n'
 exit
 
 
@@ -116,6 +125,9 @@ TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT=$(az role assignment create --role a4417e6f-f
 CURRENT_IP_ADDRESS=$(curl -s https://ifconfig.io)
 az keyvault network-rule add -n $KEYVAULT_NAME --ip-address ${CURRENT_IP_ADDRESS}
 
+az keyvault network-rule add -n $KEYVAULT_NAME --ip-address  20.23.3.36
+az keyvault network-rule remove -n $KEYVAULT_NAME --ip-address 20.23.3.36
+
 
 # combine public and private keys to a single PEM File
 cat ./certs/traefik-ingress-internal-aks-ingress-tls.crt ./certs/traefik-ingress-internal-aks-ingress-tls.key > ./certs/traefik-ingress-internal-aks-ingress-tls.pem
@@ -151,3 +163,40 @@ az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME
 kubectl apply -f ./portop/traefik.yaml
 
 kubectl wait -n portop --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
+
+#
+# Deploy the PortOps Application Stack
+#
+
+# Auth to the Sandbox ACR Environment
+
+az acr login -n sandboxwalwil
+
+# Grab the latest built containers from the Sandox Registry
+docker pull sandboxwalwil.azurecr.io/portop-angular-app:latest
+docker pull sandboxwalwil.azurecr.io/portop-cargo-detail:latest
+docker pull sandboxwalwil.azurecr.io/portop-label-print:latest
+
+# Tag the containers with the new Registry ID, 
+docker tag sandboxwalwil.azurecr.io/portop-angular-app:latest walwilreg.azurecr.io/portop-angular-app:latest
+docker tag sandboxwalwil.azurecr.io/portop-cargo-detail:latest walwilreg.azurecr.io/portop-cargo-detail:latest
+docker tag sandboxwalwil.azurecr.io/portop-label-print:latest walwilreg.azurecr.io/portop-label-print:latest
+
+# and push them for us to use
+az acr login -n walwilreg
+
+docker push walwilreg.azurecr.io/portop-angular-app
+docker push walwilreg.azurecr.io/portop-cargo-detail
+docker push walwilreg.azurecr.io/portop-label-print
+
+# We also require Redis, so grab it from Dockerhub
+az acr import --source mcr.microsoft.com/oss/bitnami/redis:6.0.8 -n $ACR_NAME
+
+
+#
+# Deploy the PortOps Application Stack
+#
+
+# REDIS
+
+kubectl apply -f portop/portop-redis.yaml

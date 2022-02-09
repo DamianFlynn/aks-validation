@@ -1,26 +1,18 @@
-E0208 20:56:01.121293       1 mic.go:1129]
+MountVolume.SetUp failed for volume "ssl-csi" :
+ rpc error: code = Unknown desc = failed to mount secrets store objects for pod portop/traefik-ingress-controller-8b4db7fb6-dwzf4, 
+ err: rpc error: code = Unknown desc = failed to mount objects, 
+ error: failed to get objectType:cert, 
+  objectName:traefik-ingress-internal-aks-ingress-tls, 
+  objectVersion:: keyvault.BaseClient
+  
+  #GetCertificate: Failure responding to request: 
+  
+  StatusCode=403 
+-- Original Error: autorest/azure: Service returned an error. 
+Status=403 Code="Forbidden" 
 
- failed to apply binding portop/podmi-ingress-controller-binding node aks-npuser01-19673818-vmss000000 for pod portop/traefik-ingress-
-controller-669ff5b5d6-v2ms4, 
-
-error: failed to update identities for aks-npuser01-19673818-vmss in p-we1k8s-aks-nodepools,
- error: compute.VirtualMachineScaleSetsClient
- #Update: Failure sending request: StatusCode=0 -- Original 
- Error: Code="LinkedAuthorizationFailed" 
- Message="The client '5bdd7fe2-348d-4b30-aeeb-58d1359dee15' with object id '5bdd7fe2-348d-4b30-aeeb-58d1359dee15' 
- has permission to perform action 'Microsoft.Compute/virtualMachineScaleSets/write' on scope 
- '/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourceGroups/p-we1k8s-aks-nodepools/providers/Microsoft.Compute/virtualMachineScaleSets/aks-npuser01-19673818-vmss'; however, it does not have permission to perform action 'Micros
-oft.ManagedIdentity/userAssignedIdentities/assign/action' 
-on the linked scope(s) 
-'/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-we1k8s-aks/providers/microsoft.managedidentity/userassignedidentities/p-we1k8s-aks-pods-identity' 
-or the linked scope(s) are invalid."
-
-
-E0208 20:56:01.121339       1 mic.go:1129] failed to apply binding portop/podmi-ingress-controller-binding node aks-npuser01-19673818-vmss000002 for pod portop/traefik-ingress-
-controller-669ff5b5d6-8j7r4, error: failed to update identities for aks-npuser01-19673818-vmss in p-we1k8s-aks-nodepools, error: compute.VirtualMachineScaleSetsClient#Update: F
-ailure sending request: StatusCode=0 -- Original Error: Code="LinkedAuthorizationFailed" Message="The client '5bdd7fe2-348d-4b30-aeeb-58d1359dee15' with object id '5bdd7fe2-348
-d-4b30-aeeb-58d1359dee15' has permission to perform action 'Microsoft.Compute/virtualMachineScaleSets/write' on scope '/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resou
-rceGroups/p-we1k8s-aks-nodepools/providers/Microsoft.Compute/virtualMachineScaleSets/aks-npuser01-19673818-vmss'; however, it does not have permission to perform action 'Micros
-oft.ManagedIdentity/userAssignedIdentities/assign/action' on the linked scope(s) '/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-we1k8s-aks/providers/micr
-osoft.managedidentity/userassignedidentities/p-we1k8s-aks-pods-identity' or the linked scope(s) are invalid."
-I02
+Message="Client address is not authorized and caller is not a trusted serv
+ice.\r\nClient address: 20.23.3.36\r\nCaller: appid=5590ad2e-a2e4-48be-852b-3e25afd6dcd9;oid=f8b4fec4-a7ee-4e1e-ae98-fa47d200715e;iss=https://sts.windows.net/cdffb2
+cf-9686-4fe1-ae64-24e2074f2a7e/;xms_mirid=/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-we1k8s-aks/providers/Microsoft.ManagedIdentity/userAs
+signedIdentities/p-we1k8s-aks-pods-identity;xms_az_rid=/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-we1k8s-aks/providers/Microsoft.ManagedId
+entity/userAssignedIdentities/p-we1k8s-aks-pods-identity\r\nVault: p-we1k8s-aks-20220210-kv;location=westeurope" InnerError={"code":"ForbiddenByFirewall"}
