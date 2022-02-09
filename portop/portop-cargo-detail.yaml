@@ -48,7 +48,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
       - name: portop-cargo-detail
-        image: walwilres.azurecr.io/portop-cargo-detail:latest
+        image: walwilreg.azurecr.io/portop-cargo-detail:latest
         imagePullPolicy: Always
         # securityContext:
         #   allowPrivilegeEscalation: false

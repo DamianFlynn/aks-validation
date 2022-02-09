@@ -200,3 +200,7 @@ az acr import --source mcr.microsoft.com/oss/bitnami/redis:6.0.8 -n $ACR_NAME
 # REDIS
 
 kubectl apply -f portop/portop-redis.yaml
+
+kubectl apply -f portop/portop-cargo-detail.yaml
+
+kubectl apply -f portop/portop-angular-app.yaml

@@ -48,7 +48,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
       - name: portop-angular-app
-        image: walwilres.azurecr.io/portop-angular-app:latest
+        image: walwilreg.azurecr.io/portop-angular-app:latest
         imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
