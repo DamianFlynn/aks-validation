@@ -16,9 +16,9 @@ spec:
         app.kubernetes.io/name: portop-angular-app
     spec:
       automountServiceAccountToken: false
-      # securityContext:
-      #   runAsUser: 10001
-      #   runAsGroup: 3000
+      securityContext:
+        runAsUser: 101
+        runAsGroup: 101
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
