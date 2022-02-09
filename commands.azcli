@@ -19,8 +19,14 @@ envName=p-we1k8s
 netRG=$envName-net
 aksRG=$envName-aks
 VNET_ID=$(az network vnet show --resource-group $netRG --name $netRG-vnet --query id -o tsv)
-LOGS_ID=/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-mgt-log/providers/microsoft.operationalinsights/workspaces/p-mgt-log-ws
-ACR_ID=/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourceGroups/p-we1k8s-acr/providers/Microsoft.ContainerRegistry/registries/WalWilReg
+echo $VNET_ID
+
+LOGS_ID=$(az monitor log-analytics workspace show -g p-mgt-log -n p-mgt-log-ws --query 'id' -o tsv)
+echo $LOGS_ID
+
+ACR_ID=$(az acr show -g p-we1k8s-acr -n walwilreg --query 'id' -o tsv)
+
+echo $ACR_ID
 
 cd ../..
 az deployment group create -g $aksRG \
@@ -35,9 +41,10 @@ az deployment group create -g $aksRG \
 
 sudo apt update
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+sudo az aks install-cli
 sudo chown -R azureuser /home/azureuser/.azure
 
-sudo az aks install-cli
+
 kubectl version --client
 kubectl get nodes
 
@@ -84,8 +91,9 @@ kubectl apply -f ./portop/portop-namespace.yaml
 # Update the Resource ID of the Identity: p-we1k8s-aks-pods-identity
 
 TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az identity show -g p-we1k8s-aks -n p-we1k8s-aks-pods-identity --query 'id' -o tsv)
+echo $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
 TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az identity show -g p-we1k8s-aks -n p-we1k8s-aks-pods-identity --query 'clientId' -o tsv)
-
+echo $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
 
 kubectl apply -f ./portop/traefik-podidentity-binding.yaml
 
@@ -95,7 +103,7 @@ kubectl apply -f ./portop/traefik-podidentity-binding.yaml
 # Load the Traefik Ingress Cert to the Keyvault
 #
 
-KEYVAULT_NAME=p-we1k8s-aks-20220207-kv
+KEYVAULT_NAME=p-we1k8s-aks-20220210-kv
 TEMP_ROLEASSIGNMENT_TO_UPLOAD_CERT=$(az role assignment create --role a4417e6f-fecd-4de8-b567-7b0420556985 --assignee-principal-type user --assignee-object-id $(az ad signed-in-user show --query 'objectId' -o tsv) --scope $(az keyvault show --name $KEYVAULT_NAME --query 'id' -o tsv) --query 'id' -o tsv)
 
 # If you are behind a proxy or some other egress that does not provide a consistent IP, you'll need to manually adjust the
@@ -135,3 +143,5 @@ az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME
 
 # Make sure to update the Load Balancer IP, and the Container Registry
 kubectl apply -f ./portop/traefik.yaml
+
+kubectl wait -n portop --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-ingress-ilb --timeout=90s
