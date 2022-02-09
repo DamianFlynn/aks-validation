@@ -16,9 +16,9 @@ spec:
         app.kubernetes.io/name: portop-angular-app
     spec:
       automountServiceAccountToken: false
-      securityContext:
-        runAsUser: 101
-        runAsGroup: 101
+      # securityContext:
+      #   runAsUser: 10001
+      #   runAsGroup: 3000
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -45,11 +45,11 @@ spec:
         image: walwilreg.azurecr.io/portop-angular-app:latest
         imagePullPolicy: Always
         securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: false
-          capabilities:
-            drop:
-              - all
+          # allowPrivilegeEscalation: false
+          # readOnlyRootFilesystem: false
+          # capabilities:
+          #   drop:
+          #     - all
         resources:
           requests:
             cpu: 100m
