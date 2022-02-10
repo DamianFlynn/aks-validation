@@ -1,3 +1,31 @@
+
+#
+## AKS INGRESS Self Signed Certificate
+#
+
+DOMAIN_NAME="walwil.com"
+# Generate the wildcard certificate for the AKS Ingress Controller
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-tls.crt -keyout traefik-ingress-internal-aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME}/O=AKS Ingress" -addext "subjectAltName = DNS:*.aks-ingress.${DOMAIN_NAME}" -addext "keyUsage = digitalSignature" -addext "extendedKeyUsage = serverAuth"
+openssl pkcs12 -export -out traefik-ingress-internal-aks-ingress-tls.pfx -in traefik-ingress-internal-aks-ingress-tls.crt -inkey traefik-ingress-internal-aks-ingress-tls.key 
+
+# Combined as PEM structure (required by Azure Application Gateway for backend pools)
+
+cat traefik-ingress-internal-aks-ingress-tls.crt traefik-ingress-internal-aks-ingress-tls.key > traefik-ingress-internal-aks-ingress-tls.pem
+
+
+# Base64 encode the AKS Ingress Controller certificate
+
+AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64=$(cat traefik-ingress-internal-aks-ingress-tls.crt | base64 | tr -d '\n')
+echo $AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64_AKS_BASELINE
+
+#
+#
+#
+
+openssl pkcs12 -in s-aks-v2-kv-wildcard-p3-walwil-com-20220209.pfx -out s-aks-v2-kv-wildcard-p3-walwil-com-20220209.pem -nodes
+openssl pkcs12 -export -out s-aks-v2-kv-wildcard-p3-walwil-com-password.pfx -in s-aks-v2-kv-wildcard-p3-walwil-com-20220209.pem
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Configure AZ Hub and Spoke
 #
@@ -33,6 +61,9 @@ az deployment group create -g $aksRG \
     --template-file ./arm-module/aks.json \
     --parameters targetVnetResourceId=$VNET_ID logAnalyticsWorkspaceId=$LOGS_ID azureContainerRegistryId=$ACR_ID
 
+agwRG=$envName-agw
+az deployment group create -g $agwRG \
+    --template-file ./arm-module/appgateway.json 
 
 
 # ---------------------------------------------------------------------------------------------------------------------

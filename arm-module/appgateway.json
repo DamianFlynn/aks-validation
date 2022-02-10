@@ -7,18 +7,45 @@
       "type": "string"
     },
     "logAnalyticsWorkspaceId": {
-      "defaultValue": "/subscriptions/3cb7d033-6a8a-40b5-b169-2353436f9b64/resourcegroups/p-we1k8s-aks/providers/microsoft.operationalinsights/workspaces/p-we1k8s-aks-ws",
+      "defaultValue": "/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourcegroups/p-mgt-log/providers/microsoft.operationalinsights/workspaces/p-mgt-log-ws",
       "type": "string"
+    },
+    "appGatewaySubnetId": {
+      "defaultValue": "/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourceGroups/p-we1k8s-net/providers/Microsoft.Network/virtualNetworks/p-we1k8s-net-vnet/subnets/AppGatewaySubnet",
+      "type": "string"
+    },
+    "keyVaultResourceId": {
+      "defaultValue": "/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourceGroups/p-we1k8s-aks/providers/Microsoft.KeyVault/vaults/p-we1k8s-aks-20220210-kv",
+      "type": "string"
+    },
+    "frontendPipId": {
+      "defaultValue": "/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourceGroups/p-we1k8s-agw/providers/Microsoft.Network/publicIPAddresses/p-we1ks8-apg-listner01-pip",
+      "type": "string"
+    },
+    "miAppGatewayId": {
+      "defaultValue": "/subscriptions/283dd4da-759e-4ceb-a6ef-618ebebb7705/resourceGroups/p-we1k8s-aks/providers/Microsoft.ManagedIdentity/userAssignedIdentities/p-we1k8s-aks-appgateway-identity",
+      "type": "string"
+    },
+    "domainName": {
+      "type": "string",
+      "defaultValue": "p3.walwil.com"
     }
+
   },
   "variables": {
     "keyVaultName": "p-we1k8s-aks-20220210-kv",
     "agwName": "p-we1k8s-aks-agw",
+    "kvAppSSLCert": "wildcard-p3-walwil-com",
+    "kvIngressSSLCert": "traefik-ingress-internal-aks-ingress-tls",
+    "aksBackendDomainName": "[concat('aks-ingress.', parameters('domainName'))]",
 
+
+    "keyVaultSubId":"[split(parameters('keyVaultResourceId'),'/')[2]]",
+    "keyVaultRg": "[split(parameters('keyVaultResourceId'),'/')[4]]",
     // Roles
 
     "keyVaultReader": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/21090545-7ca7-4776-b22c-e363652d74d2')]",
-    "keyVaultSecretsUserRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6')]",
+    "keyVaultSecretsUserRole": "[concat(subscription().Id, '/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6')]"
 
 
   },
@@ -29,15 +56,15 @@
       "name": "[variables('agwName')]",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
-        "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]",
-        "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultReader')))]",
-        "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'mi-appgateway-frontend', variables('keyVaultSecretsUserRole')))]"
+        // "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+        // "[resourceId('Microsoft.Network/privateEndpoints', 'nodepools-to-akv')]"
+        // "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'variables('mi-appgateway')', variables('keyVaultReader')))]",
+        // "[resourceId('Microsoft.KeyVault/vaults/providers/roleAssignments', variables('keyVaultName'), 'Microsoft.Authorization', guid(resourceGroup().id, 'variables('mi-appgateway')', variables('keyVaultSecretsUserRole')))]"
       ],
       "identity": {
         "type": "UserAssigned",
         "userAssignedIdentities": {
-          "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities',  'mi-appgateway-frontend')]": {}
+          "[parameters('miAppGatewayId')]": {}
         }
       },
       "zones": "[pickZones('Microsoft.Network', 'applicationGateways', parameters('location'), 3)]",
@@ -56,9 +83,13 @@
         },
         "trustedRootCertificates": [
           {
-            "name": "root-cert-wildcard-aks-ingress",
+            "name": "aks-ingess-cert",
             "properties": {
-              "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/appgw-ingress-internal-aks-ingress-tls')]"
+              "keyVaultSecretId": "https://p-we1k8s-aks-20220210-kv.vault.azure.net/secrets/traefik-ingress-internal-aks-ingress-tls/f6da2fc34b1f4505a69313e40234bccb"
+
+              //"keyVaultSecretId": "[concat('https://',variables('keyVaultName'),'.vault.azure.net/secrets/',variables('kvIngressSSLCert'),'/4ba6fef81ea54017a6d47b9871eaee4b')]"
+              //"keyVaultSecretId": "[concat(parameters('keyVaultResourceId'),'/secrets/',variables('kvIngressSSLCert'))]"
+              //"keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/',variables('kvIngressSSLCert'))]"
             }
           }
         ],
@@ -67,7 +98,7 @@
             "name": "apw-ip-configuration",
             "properties": {
               "subnet": {
-                "id": "[parameters('targetVnetResourceId'), '/subnets/snet-applicationgateway')]"
+                "id": "[parameters('appGatewaySubnetId')]"
               }
             }
           }
@@ -77,7 +108,7 @@
             "name": "apw-frontend-ip-configuration",
             "properties": {
               "PublicIPAddress": {
-                "id": "[resourceId(subscription().subscriptionId, variables('vNetResourceGroup'), 'Microsoft.Network/publicIpAddresses', 'pip-BU0001A0008-00')]"
+                "id": "[parameters('frontendPipId')]"
               }
             }
           }
@@ -108,7 +139,11 @@
           {
             "name": "[concat(variables('agwName'), '-ssl-certificate')]",
             "properties": {
-              "keyVaultSecretId": "[concat(reference(variables('keyVaultName')).vaultUri,'secrets/gateway-public-cert')]"
+              "keyVaultSecretId": "https://p-we1k8s-aks-20220210-kv.vault.azure.net/secrets/traefik-ingress-internal-aks-ingress-tls/af643c6f59d04784ac4de5c38ffb37f5"
+              //"keyVaultSecretId": "[concat('https://',variables('keyVaultName'),'.vault.azure.net/secrets/',variables('kvAppSSLCert'))]"
+              
+              //"keyVaultSecretId": "[concat(reference( variables('keyVaultName')).vaultUri,'secrets/',variables('kvAppSSLCert'))]"
+              //"keyVaultSecretId": "[concat(parameters('keyVaultResourceId'),'/secrets/',variables('kvAppSSLCert'))]"
             }
           }
         ],
@@ -154,7 +189,7 @@
               },
               "trustedRootCertificates": [
                 {
-                  "id": "[resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', variables('agwName'), 'root-cert-wildcard-aks-ingress')]"
+                  "id": "[resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', variables('agwName'), 'aks-ingess-cert')]"
                 }
               ]
             }
@@ -174,7 +209,7 @@
               "sslCertificate": {
                 "id": "[resourceId('Microsoft.Network/applicationGateways/sslCertificates', variables('agwName'),  concat(variables('agwName'), '-ssl-certificate'))]"
               },
-              "hostName": "[concat('bicycle.', parameters('domainName'))]",
+              "hostName": "[concat('portop-web.', parameters('domainName'))]",
               "hostNames": [],
               "requireServerNameIndication": true
             }
@@ -207,7 +242,7 @@
             "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]"
           ],
           "properties": {
-            "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+            "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
             "logs": [
               {
                 "category": "ApplicationGatewayAccessLog",
