@@ -6,6 +6,9 @@
 DOMAIN_NAME="walwil.com"
 # Generate the wildcard certificate for the AKS Ingress Controller
 
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-tls.crt -keyout traefik-ingress-internal-aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME_AKS_BASELINE}/O=Contoso AKS Ingress"
+
+
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-tls.crt -keyout traefik-ingress-internal-aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME}/O=AKS Ingress" -addext "subjectAltName = DNS:*.aks-ingress.${DOMAIN_NAME}" -addext "keyUsage = digitalSignature" -addext "extendedKeyUsage = serverAuth"
 openssl pkcs12 -export -out traefik-ingress-internal-aks-ingress-tls.pfx -in traefik-ingress-internal-aks-ingress-tls.crt -inkey traefik-ingress-internal-aks-ingress-tls.key 
 
@@ -73,6 +76,7 @@ az deployment group create -g $agwRG \
 #
 # Configure Jumpbox
 #
+# <Traef1k!2022/>
 
 sudo apt update
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
@@ -183,9 +187,10 @@ kubectl apply -f ./portop/traefik-tls-secret-keyvault.yaml
 # Now - Lets import some Containers into our registy for deployment to the cluster
 #           
 ACR_NAME=walwilreg
+az acr login -n walwilreg
 az acr import --source docker.io/library/traefik:v2.5.3 -n $ACR_NAME
 az acr import --source docker.io/weaveworks/kured:1.9.0 -n $ACR_NAME
-
+az acr import --source docker.io/starkfell/k8s-jumpbox -n $ACR_NAME
 #
 # Deploy the Traefik Reverse Proxy Service
 #
