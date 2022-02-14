@@ -213,7 +213,7 @@ docker pull sandboxwalwil.azurecr.io/portop-label-print:latest
 docker tag sandboxwalwil.azurecr.io/portop-angular-app:latest walwilreg.azurecr.io/portop-angular-app:latest
 docker tag sandboxwalwil.azurecr.io/portop-cargo-detail:latest walwilreg.azurecr.io/portop-cargo-detail:latest
 docker tag sandboxwalwil.azurecr.io/portop-label-print:latest walwilreg.azurecr.io/portop-label-print:latest
-docker tag kuard walwilreg.azurecr.io/kuard:latest
+docker tag hello-world walwilreg.azurecr.io/hello-world:latest
 
 # and push them for us to use
 az acr login -n walwilreg
@@ -222,6 +222,7 @@ docker push walwilreg.azurecr.io/portop-angular-app
 docker push walwilreg.azurecr.io/portop-cargo-detail
 docker push walwilreg.azurecr.io/portop-label-print
 docker push walwilreg.azurecr.io/kuard:latest
+docker push walwilreg.azurecr.io/hello-world:latest
 
 # We also require Redis, so grab it from Dockerhub
 az acr import --source mcr.microsoft.com/oss/bitnami/redis:6.0.8 -n $ACR_NAME
