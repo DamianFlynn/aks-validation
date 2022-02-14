@@ -10,3 +10,6 @@ azure.conf
 *.pem
 *.key
 *.crt
+
+# secrets
+secrets.md

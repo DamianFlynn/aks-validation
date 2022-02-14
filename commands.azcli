@@ -6,9 +6,6 @@
 DOMAIN_NAME="walwil.com"
 # Generate the wildcard certificate for the AKS Ingress Controller
 
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-tls.crt -keyout traefik-ingress-internal-aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME_AKS_BASELINE}/O=Contoso AKS Ingress"
-
-
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out traefik-ingress-internal-aks-ingress-tls.crt -keyout traefik-ingress-internal-aks-ingress-tls.key -subj "/CN=*.aks-ingress.${DOMAIN_NAME}/O=AKS Ingress" -addext "subjectAltName = DNS:*.aks-ingress.${DOMAIN_NAME}" -addext "keyUsage = digitalSignature" -addext "extendedKeyUsage = serverAuth"
 openssl pkcs12 -export -out traefik-ingress-internal-aks-ingress-tls.pfx -in traefik-ingress-internal-aks-ingress-tls.crt -inkey traefik-ingress-internal-aks-ingress-tls.key 
 
@@ -76,7 +73,6 @@ az deployment group create -g $agwRG \
 #
 # Configure Jumpbox
 #
-# <Traef1k!2022/>
 
 sudo apt update
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
@@ -217,6 +213,7 @@ docker pull sandboxwalwil.azurecr.io/portop-label-print:latest
 docker tag sandboxwalwil.azurecr.io/portop-angular-app:latest walwilreg.azurecr.io/portop-angular-app:latest
 docker tag sandboxwalwil.azurecr.io/portop-cargo-detail:latest walwilreg.azurecr.io/portop-cargo-detail:latest
 docker tag sandboxwalwil.azurecr.io/portop-label-print:latest walwilreg.azurecr.io/portop-label-print:latest
+docker tag kuard walwilreg.azurecr.io/kuard:latest
 
 # and push them for us to use
 az acr login -n walwilreg
@@ -224,6 +221,7 @@ az acr login -n walwilreg
 docker push walwilreg.azurecr.io/portop-angular-app
 docker push walwilreg.azurecr.io/portop-cargo-detail
 docker push walwilreg.azurecr.io/portop-label-print
+docker push walwilreg.azurecr.io/kuard:latest
 
 # We also require Redis, so grab it from Dockerhub
 az acr import --source mcr.microsoft.com/oss/bitnami/redis:6.0.8 -n $ACR_NAME

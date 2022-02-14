@@ -42,7 +42,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
       containers:
       - name: portop-angular-app
-        image: walwilreg.azurecr.io/starkfell/k8s-jumpbox:latest
+        image: walwilreg.azurecr.io/kuard:latest
         imagePullPolicy: Always
         # securityContext:
         #   allowPrivilegeEscalation: false
