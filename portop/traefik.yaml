@@ -101,7 +101,7 @@ data:
       # prevent Traefik from collecting and sending stats from production
       sendanonymoususage = false
     [log]
-      level = "ERROR"
+      level = "DEBUG"
       format = "json"
     [api]
       dashboard = false
