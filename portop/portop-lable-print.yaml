@@ -7,19 +7,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: portop-cargo-detail-deployment
+  name: portop-label-print-deployment
   namespace: portop
   labels:
-    app.kubernetes.io/name: portop-cargo-detail
+    app.kubernetes.io/name: portop-label-print
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app.kubernetes.io/name: portop-cargo-detail
+      app.kubernetes.io/name: portop-label-print
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: portop-cargo-detail
+        app.kubernetes.io/name: portop-label-print
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -33,7 +33,7 @@ spec:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                - portop-cargo-detail
+                - portop-label-print
             topologyKey: "kubernetes.io/hostname"
         podAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -47,8 +47,8 @@ spec:
                   - traefik-ingress-ilb
               topologyKey: "kubernetes.io/hostname"
       containers:
-      - name: portop-cargo-detail
-        image: walwilreg.azurecr.io/portop-cargo-detail:latest
+      - name: portop-label-print
+        image: walwilreg.azurecr.io/portop-label-print:latest
         imagePullPolicy: Always
         # securityContext:
         #   allowPrivilegeEscalation: false
@@ -74,41 +74,40 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: portop-cargo-detail-pdb
+  name: portop-label-print-pdb
   namespace: portop
 spec:
   minAvailable: 75%
   selector:
     matchLabels:
-      app.kubernetes.io/name: portop-cargo-detail
+      app.kubernetes.io/name: portop-label-print
 ---
-apiVersion: v1
 kind: Service
+apiVersion: v1
 metadata:
-  name: portop-cargo-ingress-ilb
+  name: portop-label-print-ingress-ilb
   namespace: portop
-#  labels:
-#    app.kubernetes.io/name: portop-cargo-ingress-ilb
-#    app.kubernetes.io/instance: portop-cargo-ingress-ilb
-#  annotations:
-#    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-#    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "ResourceSubnet"
+  labels:
+    app.kubernetes.io/name: portop-label-print-ingress-ilb
+    app.kubernetes.io/instance: portop-label-print-ingress-ilb
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "ResourceSubnet"
 spec:
   type: LoadBalancer
-#  loadBalancerIP: 10.182.18.5 # ResourcesSubnet
-#  externalTrafficPolicy: Local
+  loadBalancerIP: 10.182.18.6 # ResourcesSubnet
+  externalTrafficPolicy: Local
   selector:
-    app.kubernetes.io/name: portop-cargo-detail
+    app.kubernetes.io/name: portop-label-print
   ports:
   - name: http
     port: 80
-#    targetPort: 80
-
+    targetPort: 80
 ---
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
 # metadata:
-#   name: portop-cargo-detail-ingress
+#   name: portop-label-print-ingress
 #   namespace: portop
 #   annotations:
 #     kubernetes.io/ingress.allow-http: "false"
@@ -138,7 +137,7 @@ spec:
 #         pathType: Prefix
 #         backend:
 #           service:
-#             name: portop-cargo-detail-service
+#             name: portop-label-print-service
 #             port:
 #               number: 8080
 # ---
