@@ -95,7 +95,7 @@ metadata:
      service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "ResourceSubnet"
 spec:
   type: LoadBalancer
-#  loadBalancerIP: 10.182.18.5 # ResourcesSubnet
+  loadBalancerIP: 10.182.18.10 # ResourcesSubnet
 #  externalTrafficPolicy: Local
   selector:
     app.kubernetes.io/name: portop-cargo-detail
