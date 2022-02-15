@@ -82,27 +82,27 @@ spec:
     matchLabels:
       app.kubernetes.io/name: portop-label-print
 ---
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
   name: portop-label-print-ingress-ilb
   namespace: portop
-  labels:
-    app.kubernetes.io/name: portop-label-print-ingress-ilb
-    app.kubernetes.io/instance: portop-label-print-ingress-ilb
+#  labels:
+#    app.kubernetes.io/name: portop-label-print-ingress-ilb
+#    app.kubernetes.io/instance: portop-label-print-ingress-ilb
   annotations:
-    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "ResourceSubnet"
+     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+     service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "ResourceSubnet"
 spec:
   type: LoadBalancer
-  loadBalancerIP: 10.182.18.6 # ResourcesSubnet
-  externalTrafficPolicy: Local
+  loadBalancerIP: 10.182.18.11 # ResourcesSubnet
+#  externalTrafficPolicy: Local
   selector:
-    app.kubernetes.io/name: portop-label-print
+    app.kubernetes.io/name: portop-label-print-detail
   ports:
   - name: http
     port: 80
-    targetPort: 80
+
 ---
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
